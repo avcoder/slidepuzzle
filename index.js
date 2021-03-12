@@ -16,7 +16,7 @@ const puzzlePieces = [
   { name: ".box12", x: 300, y: 200, order: 11 },
   { name: ".box13", x: 0, y: 300, order: 12 },
   { name: ".box14", x: 100, y: 300, order: 13 },
-  { name: ".box15", x: 200, y: 300, order: 14 }
+  { name: ".box15", x: 200, y: 300, order: 14 },
 ];
 
 // blankSpace: initialize blank square as last piece so as to remember where it is.
@@ -34,12 +34,10 @@ const puzzle = {
   directionToMove: "",
   movablePieces: [],
   getRandomInt,
-  isOrdered: false,
-  isShuffling: true,
-  initialize: function() {
+  initialize: function () {
     // attach click event handlers for each piece
     const boxes = [...document.querySelectorAll('[class^="box"]')];
-    boxes.map(box => {
+    boxes.map((box) => {
       box.addEventListener("click", () => {
         this.currentPiece = box;
         this.slide();
@@ -52,14 +50,14 @@ const puzzle = {
     // show puzzle pieces
     this.display();
   },
-  display: function() {
+  display: function () {
     // initialize pieces to their proper order
-    this.pieces.forEach(piece => {
+    this.pieces.forEach((piece) => {
       const pieceDOM = document.querySelector(piece.name);
       TweenLite.set(pieceDOM, { x: piece.x, y: piece.y });
     });
   },
-  slide: function() {
+  slide: function () {
     // determine if puzzle piece(s) can slide and if so, move.
     // Is the clicked piece movable?
     this.directionToMove = this.isMoveable();
@@ -78,10 +76,10 @@ const puzzle = {
       this.movablePieces = [];
 
       // Check if game won
-      // this is checked within TweenMax's callback
+      // this.checkWinner();
     }
   },
-  isMoveable: function() {
+  isMoveable: function () {
     // Is the clicked piece movable? If puzzlePiece's x or y coords match blankSpace's, then YES.
     // If yes, then return a direction to one of: "up", "down", "left", "right"
     // If no, then return a direction of ""
@@ -110,7 +108,7 @@ const puzzle = {
       return "";
     }
   },
-  findMovablePieces: function() {
+  findMovablePieces: function () {
     // Filter if x,y matches blankSpace's which includes currentPiece that was
     // clicked on which will be added to cumulative array of all movable pieces.
 
@@ -119,7 +117,7 @@ const puzzle = {
     switch (this.directionToMove) {
       case "up":
         this.movablePieces = this.pieces.filter(
-          piece =>
+          (piece) =>
             piece.x === this.blankSpace.x &&
             piece.y >= this.blankSpace.y &&
             piece.y <= this.pieces[index].y
@@ -127,7 +125,7 @@ const puzzle = {
         break;
       case "down":
         this.movablePieces = this.pieces.filter(
-          piece =>
+          (piece) =>
             piece.x === this.blankSpace.x &&
             piece.y <= this.blankSpace.y &&
             piece.y >= this.pieces[index].y
@@ -135,7 +133,7 @@ const puzzle = {
         break;
       case "left":
         this.movablePieces = this.pieces.filter(
-          piece =>
+          (piece) =>
             piece.y === this.blankSpace.y &&
             piece.x >= this.blankSpace.x &&
             piece.x <= this.pieces[index].x
@@ -143,7 +141,7 @@ const puzzle = {
         break;
       case "right":
         this.movablePieces = this.pieces.filter(
-          piece =>
+          (piece) =>
             piece.y === this.blankSpace.y &&
             piece.x <= this.blankSpace.x &&
             piece.x >= this.pieces[index].x
@@ -156,7 +154,7 @@ const puzzle = {
     // must sort arrays so bugs don't eventually come up when you start moving pieces around
     this.sortMoveablePieces();
   },
-  preMovePieces: function() {
+  preMovePieces: function () {
     // Update each movable puzzle piece's x,y coords to desired destination before it actually moves
     // Loop over each element in array, look at x, y coords, swap it appropriately
 
@@ -166,12 +164,12 @@ const puzzle = {
       this.preMovePiecesUL();
     }
   },
-  preMovePiecesDR: function() {
+  preMovePiecesDR: function () {
     // remember 1st element's x,y coords which will be used to replace blankSpace's x,y coords
     const [rememberX, rememberY, rememberOrder] = [
       this.movablePieces[0].x,
       this.movablePieces[0].y,
-      this.movablePieces[0].order
+      this.movablePieces[0].order,
     ];
 
     const length = this.movablePieces.length;
@@ -193,14 +191,14 @@ const puzzle = {
     this.blankSpace.y = rememberY;
     this.blankSpace.order = rememberOrder;
   },
-  preMovePiecesUL: function() {
+  preMovePiecesUL: function () {
     const length = this.movablePieces.length;
 
     // remember last element's x,y coords which will be used to replace blankSpace's x,y coords
     const [rememberX, rememberY, rememberOrder] = [
       this.movablePieces[length - 1].x,
       this.movablePieces[length - 1].y,
-      this.movablePieces[length - 1].order
+      this.movablePieces[length - 1].order,
     ];
 
     // swap values, including 'order' which will be used for checkWinner()
@@ -220,28 +218,20 @@ const puzzle = {
     this.blankSpace.y = rememberY;
     this.blankSpace.order = rememberOrder;
   },
-  slidePieces: function() {
-    this.movablePieces.forEach(piece => {
+  slidePieces: function () {
+    this.movablePieces.forEach((piece) => {
       const box = document.querySelector(piece.name);
-      const myAnimation = TweenMax.to(box, 0.17, {
+      TweenMax.to(box, 0.17, {
         x: piece.x,
         y: piece.y,
-        ease: Power0.easeNone
-      });
-      // within myAnimation's callback is the actual check to see if winner won
-      myAnimation.eventCallback("onComplete", () => {
-        const boxes = [...document.querySelectorAll('[class^="box"]')];
-        this.isOrdered = true;
-        for (let i = 0; i < boxes.length; i++) {
-          if (this.pieces[i].order !== i) {
-            this.isOrdered = false;
-          }
-        }
-        alertWinner(this.isShuffling, this.isOrdered);
+        ease: Power0.easeNone,
+        onComplete: () => {
+          this.checkWinner();
+        },
       });
     });
   },
-  sortMoveablePieces: function() {
+  sortMoveablePieces: function () {
     if (this.directionToMove === "up" || this.directionToMove === "down") {
       this.movablePieces.sort((a, b) => {
         return a.y - b.y;
@@ -255,15 +245,13 @@ const puzzle = {
       });
     }
   },
-  shuffle: function() {
-    // below boolean value is used to ensure the alert message when checking for "winner!"
-    this.isShuffling = true;
-
+  shuffle: function () {
     // loop below steps multiple times to shuffle sufficiently
     for (let i = 0; i < 100; i++) {
       // get all 6 moveable pieces based on blankspace's position
       const sixPieces = this.pieces.filter(
-        piece => piece.x === this.blankSpace.x || piece.y === this.blankSpace.y
+        (piece) =>
+          piece.x === this.blankSpace.x || piece.y === this.blankSpace.y
       );
 
       // randomly click on 1 of the 6 pieces
@@ -273,19 +261,25 @@ const puzzle = {
       );
       squareToClick.click();
     }
-    this.isShuffling = false;
-  }
+  },
+  checkWinner: function () {
+    console.log("entered");
+    const boxes = [...document.querySelectorAll('[class^="box"]')];
+    let isOrdered = true;
+    for (let i = 0; i < boxes.length; i++) {
+      console.log(this.pieces[i].order, i);
+      if (this.pieces[i].order != i) {
+        isOrdered = false;
+      }
+    }
+
+    if (isOrdered) {
+      alert("winner");
+    }
+  },
 };
 
 puzzle.initialize();
-
-function alertWinner(isShuffling, isOrdered) {
-  // check to see if puzzle is ordered sequentially
-  console.log(isShuffling, isOrdered);
-  if (!isShuffling && isOrdered) {
-    alert("winner");
-  }
-}
 
 function getRandomInt(max = 6) {
   // will return 0, 1, 2, 3, 4 or 5
